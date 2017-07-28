@@ -26,12 +26,31 @@ func NewFileEnvLookup(file string, parent config.EnvironmentLookup) (*FileEnvLoo
 		}
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
-			t := scanner.Text()
+			t := strings.TrimSpace(scanner.Text())
 			parts := strings.SplitN(t, "=", 2)
 			if len(parts) == 1 {
 				variables[parts[0]] = ""
 			} else {
-				variables[parts[0]] = parts[1]
+				stringCharacter := ""
+				if strings.HasPrefix(parts[1], `"`) {
+					stringCharacter = `"`
+				} else if strings.HasPrefix(parts[1], `'`) {
+					stringCharacter = `'`
+				} else if strings.HasPrefix(parts[1], "`") {
+					stringCharacter = "`"
+				}
+
+				if strings.HasPrefix(parts[1], stringCharacter) && strings.HasSuffix(parts[1], stringCharacter) && len(parts[1]) > 1 || stringCharacter == "" {
+					variables[parts[0]] = strings.Trim(parts[1], stringCharacter)
+				} else {
+					for scanner.Scan() {
+						parts[1] = parts[1] + "\n" + strings.TrimSpace(scanner.Text())
+						if strings.HasSuffix(parts[1], stringCharacter) {
+							variables[parts[0]] = strings.Trim(parts[1], stringCharacter)
+							break
+						}
+					}
+				}
 			}
 		}
 
