@@ -1720,6 +1720,10 @@ def test_variables(client, compose):
     assert service.launchConfig.labels['var'] == 'nginx'
     assert service.metadata.var == 'E'
     assert service.metadata.var2 == ''
+    assert service.launchConfig.environment['F'] == "1\n2\n3"
+    assert service.launchConfig.environment['G'] == "\n1\n2\n3\n"
+    assert service.launchConfig.environment['H'] == "1 2 3"
+    assert service.launchConfig.environment['I'] == '123'
 
 
 def test_metadata_on_service(client, compose):
